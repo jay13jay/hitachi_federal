@@ -15,6 +15,23 @@
       "ConstraintDescription" : "must be a valid EC2 instance type."
     },
 
+    "AnsibleRepository": {
+      "Default": "https://github.com/ansible/ansible-examples",
+      "Description": "The git repository of Ansible playbooks",
+      "Type": "String"
+    },
+
+    "AnsibleCheckout": {
+      "Default": "386fdb253284e8fedc4943706f5f4374f7dc89d6",
+      "Description": "The branch/tag/commit to checkout",
+      "Type": "String"
+    },
+    "AnsiblePlaybook": {
+      "Default": "wordpress-nginx/site.yml",
+      "Description": "The Ansible playbook to use",
+      "Type": "String"
+    },
+
     "OperatorEMail": {
       "Description": "EMail address to notify if there are any scaling operations",
       "Type": "String",
@@ -147,7 +164,7 @@
 
             "services" : {
               "sysvinit" : {
-                "httpd"    : { "enabled" : "true", "ensureRunning" : "true" },
+                "nginx"    : { "enabled" : "true", "ensureRunning" : "true" },
                 "cfn-hup" : { "enabled" : "true", "ensureRunning" : "true",
                               "files" : ["/etc/cfn/cfn-hup.conf", "/etc/cfn/hooks.d/cfn-auto-reloader.conf"]}
               }
@@ -161,19 +178,24 @@
                                           { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
         "InstanceType" : { "Ref" : "InstanceType" },
-        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
-             "#!/bin/bash -xe\n",
-             "yum update -y aws-cfn-bootstrap\n",
+        "UserData"       : {"Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -xe\n",
+            "yum update -y aws-cfn-bootstrap\n",
 
-             "/opt/aws/bin/cfn-init -v ",
-             "         --stack ", { "Ref" : "AWS::StackName" },
-             "         --resource LaunchConfig ",
-             "         --region ", { "Ref" : "AWS::Region" }, "\n",
+            "/opt/aws/bin/cfn-init -v ",
+            "         --stack ", { "Ref" : "AWS::StackName" },
+            "         --resource LaunchConfig ",
+            "         --region ", { "Ref" : "AWS::Region" }, "\n",
 
-             "/opt/aws/bin/cfn-signal -e $? ",
-             "         --stack ", { "Ref" : "AWS::StackName" },
-             "         --resource WebServerGroup ",
-             "         --region ", { "Ref" : "AWS::Region" }, "\n"
+            "/opt/aws/bin/cfn-signal -e $? ",
+            "         --stack ", { "Ref" : "AWS::StackName" },
+            "         --resource WebServerGroup ",
+            "         --region ", { "Ref" : "AWS::Region" }, "\n",
+
+            "echo \"localhost ansible_connection=local\" > /etc/ansible/hosts\n",
+            "ansible-pull -U ", {"Ref": "AnsibleRepository"},
+            " -C ", {"Ref": "AnsibleCheckout"},
+            " ", {"Ref": "AnsiblePlaybook"}
         ]]}}
       }
     },
