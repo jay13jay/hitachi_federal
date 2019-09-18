@@ -16,18 +16,18 @@
     },
 
     "AnsibleRepository": {
-      "Default": "https://github.com/ansible/ansible-examples",
+      "Default": "https://github.com/jay13jay/wordpress-nginx",
       "Description": "The git repository of Ansible playbooks",
       "Type": "String"
     },
 
     "AnsibleCheckout": {
-      "Default": "386fdb253284e8fedc4943706f5f4374f7dc89d6",
+      "Default": "dcd0769f16fa6d2a43cda26af45cf7f77865f102",
       "Description": "The branch/tag/commit to checkout",
       "Type": "String"
     },
     "AnsiblePlaybook": {
-      "Default": "wordpress-nginx/site.yml",
+      "Default": "site.yml",
       "Description": "The Ansible playbook to use",
       "Type": "String"
     },
