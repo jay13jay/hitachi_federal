@@ -114,7 +114,8 @@
             "AllocatedStorage": "10",
             "Engine" : "MySQL",
             "MasterUsername" : { "Ref" : "DBUser" },
-            "MasterUserPassword" : { "Ref" : "DBPassword" }
+            "MasterUserPassword" : { "Ref" : "DBPassword" },
+            "VPCSecurityGroups" : [ { "Fn::GetAtt" : [ "DBSecurityGroup", "GroupId" ] } ]
         }
     },
 
@@ -317,7 +318,20 @@
           "Timeout" : "5"
         }
       }
-    },    
+    },
+
+    "DBSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription": "Open database for access",
+        "SecurityGroupIngress" : [ {
+          "IpProtocol" : "tcp",
+          "FromPort" : "3306",
+          "ToPort" : "3306",
+          "CidrIp" : "0.0.0.0/0"
+        } ]
+      }
+    },
 
     "InstanceSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
