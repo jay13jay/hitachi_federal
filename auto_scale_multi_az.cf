@@ -222,7 +222,11 @@
             "yum install -y ansible git --enablerepo=epel\n",
 
             "echo \"localhost ansible_connection=local\" > /etc/ansible/hosts\n",
-            "ansible-pull -U https://github.com/jay13jay/wordpress-nginx.git site.yml",
+            "echo $(pwd) >> /home/ec2-user/script-info.txt\n",
+            "echo $(whoami) >> /home/ec2-user/script-info.txt\n",
+            "git clone https://github.com/jay13jay/wordpress-nginx.git\n",
+            "cd wordpress-nginx/\n",
+            "ansible-playbook site.yml\n",
 
             "/opt/aws/bin/cfn-init -v ",
             "         --stack ", { "Ref" : "AWS::StackName" },
