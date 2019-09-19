@@ -225,6 +225,7 @@
             "echo \"localhost ansible_connection=local\" > /etc/ansible/hosts\n",
             "ansible-pull -U ", {"Ref": "AnsibleRepository"},
             " -C ", {"Ref": "AnsibleCheckout"},
+            " -e wp_db_host=", { "Fn::GetAtt" : [ "WordpressDB", "Endpoint.Address" ] },
             " ", {"Ref": "AnsiblePlaybook"}, "\n",
 
             "/opt/aws/bin/cfn-init -v ",
