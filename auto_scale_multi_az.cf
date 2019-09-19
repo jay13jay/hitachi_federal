@@ -109,7 +109,7 @@
     "WordpressDB" : {
         "Type" : "AWS::RDS::DBInstance",
         "Properties" : {
-            "DBName": "wordpress",
+            "DBSnapshotIdentifier": "initial-wp-install",
             "DBInstanceClass" : "db.t2.micro",
             "AllocatedStorage": "10",
             "Engine" : "MySQL",
