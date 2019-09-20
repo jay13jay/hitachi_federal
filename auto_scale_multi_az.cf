@@ -22,7 +22,7 @@
     },
 
     "AnsibleCheckout": {
-      "Default": "master",
+      "Default": "bcf5fbf46ad868b88e4c552a67d334e2d84823c0",
       "Description": "The branch/tag/commit to checkout",
       "Type": "String"
     },
