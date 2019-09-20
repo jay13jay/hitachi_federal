@@ -167,15 +167,6 @@
             },
 
             "files" : {
-              "/var/www/html/index.html" : {
-                "content" : { "Fn::Join" : ["\n", [
-                  "<h1>Congratulations, you have successfully launched the AWS CloudFormation sample.</h1>"
-                ]]},
-                "mode"    : "000644",
-                "owner"   : "root",
-                "group"   : "root"
-              },
-
               "/etc/cfn/cfn-hup.conf" : {
                 "content" : { "Fn::Join" : ["", [
                   "[main]\n",
@@ -227,7 +218,8 @@
             "ansible-pull -U ", {"Ref": "AnsibleRepository"},
             " -C ", {"Ref": "AnsibleCheckout"},
             " -e wp_db_host=", { "Fn::GetAtt" : [ "WordpressDB", "Endpoint.Address" ] },
-            " ", {"Ref": "AnsiblePlaybook"}, "\n",
+            " ", {"Ref": "AnsiblePlaybook"}, " -e wp_elb_url=",
+            { "Fn::GetAtt" : [ "ElasticLoadBalancer", "DNSName" ] }, "\n",
 
             "/opt/aws/bin/cfn-init -v ",
             "         --stack ", { "Ref" : "AWS::StackName" },
