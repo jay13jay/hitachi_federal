@@ -1,3 +1,4 @@
 *code-workspace
 *.pem
 *.bak
+*_stack.sh
