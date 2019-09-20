@@ -217,9 +217,9 @@
             "echo \"localhost ansible_connection=local\" > /etc/ansible/hosts\n",
             "ansible-pull -U ", {"Ref": "AnsibleRepository"},
             " -C ", {"Ref": "AnsibleCheckout"},
-            " -e wp_db_host=", { "Fn::GetAtt" : [ "WordpressDB", "Endpoint.Address" ] },
-            " ", {"Ref": "AnsiblePlaybook"}, " -e wp_elb_url=",
-            { "Fn::GetAtt" : [ "ElasticLoadBalancer", "DNSName" ] }, "\n",
+            " -e wp_db_url=", { "Fn::GetAtt" : [ "WordpressDB", "Endpoint.Address" ] },
+            " ", {"Ref": "AnsiblePlaybook"},
+            " -e wp_elb_url=", { "Fn::GetAtt" : [ "ElasticLoadBalancer", "DNSName" ] }, "\n",
 
             "/opt/aws/bin/cfn-init -v ",
             "         --stack ", { "Ref" : "AWS::StackName" },
