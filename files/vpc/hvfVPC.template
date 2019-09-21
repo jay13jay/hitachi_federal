@@ -104,6 +104,7 @@ Resources:
 
   DBSubnetGroup:
    Type: AWS::RDS::DBSubnetGroup
+   Description: Subnet group for DB instances
    Properties:
       SubnetIds:
           - !Ref PrivateSubnet1
