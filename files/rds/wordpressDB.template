@@ -1,0 +1,75 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Provision database instance from existing RDS snapshot",
+
+  "Parameters" : {
+    "DBUser": {
+      "Description" : "The database admin account username",
+      "Default": "wordpress",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBPort": {
+      "Description" : "The database port to use",
+      "Default": "3306",
+      "Type": "String",
+      "MinLength": "2",
+      "MaxLength": "5",
+      "AllowedPattern" : "[0-9]*",
+      "ConstraintDescription" : "Must pick a port between 1-65535"
+    },
+
+    "DBPassword": {
+      "NoEcho": "true",
+      "Description" : "The database admin account password",
+      "Default": "12345678",
+      "Type": "String",
+      "MinLength": "8",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    }
+  },
+
+  "Resources" : {
+    "WordpressSG": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : "https://cf-templates-jzms7qc9pace-us-east-1.s3.amazonaws.com/mysqlSG.cf",
+        "Parameters" : {
+          "DBPort" : { "Ref": "DBPort" }
+        }
+      }
+    },
+
+    "WordpressDB" : {
+      "Type" : "AWS::RDS::DBInstance",
+      "Properties" : {
+          "DBSnapshotIdentifier": "initial-wp-install",
+          "BackupRetentionPeriod": "0",
+          "DBInstanceClass" : "db.t2.micro",
+          "AllocatedStorage": "10",
+          "Engine" : "MySQL",
+          "MasterUsername" : { "Ref" : "DBUser" },
+          "MasterUserPassword" : { "Ref" : "DBPassword" },
+          "VPCSecurityGroups" : [ { "Fn::GetAtt" : [ "WordpressSG", "Outputs.VPCID" ] } ]
+      }
+    }
+  },
+
+  "Outputs" : {
+    "URL" : {
+      "Description" : "The Endpoint of the RDS instance",
+      "Value" :  { "Fn::GetAtt" : [ "WordpressDB", "Endpoint.Address" ]}
+    },
+    "Port" : {
+      "Description" : "Database port",
+      "Value" : { "Fn::GetAtt" : [ "WordpressDB", "Endpoint.Port" ]}
+    }
+  }
+}

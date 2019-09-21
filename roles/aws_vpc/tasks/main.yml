@@ -1,0 +1,13 @@
+- name: Create a VPC to provision infrastructure
+  cloudformation:
+    stack_name: "ansible-cloudformation-HVF-VPC"
+    state: "present"
+    disable_rollback: true
+    template: "files/vpc/hvfVPC.template"
+    template_parameters:
+      AvailabilityZones:
+        - "us-east-1a"
+        - "us-east-1b"
+      NumberOfAZs: 2
+    tags:
+      Project: "ansible-cloudformation-HVF"

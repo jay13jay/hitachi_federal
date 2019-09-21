@@ -1,0 +1,10 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Provision database instance from existing RDS snapshot",
+
+  "Parameters" : {
+
+  }
+  
+}

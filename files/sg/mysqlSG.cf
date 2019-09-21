@@ -1,0 +1,47 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Provision security group to allow access to RDS instance",
+
+  "Parameters" : {
+    "DBPort": {
+      "Description" : "The database port to use",
+      "Default": "3306",
+      "Type": "String",
+      "MinLength": "2",
+      "MaxLength": "5",
+      "AllowedPattern" : "[0-9]*",
+      "ConstraintDescription" : "Must pick a port between 1-65535"
+    },
+
+    "CidrRange" : {
+        "Description" : "The IP's to allow connection to the database",
+        "Default" : "0.0.0.0/0",
+        "Type" : "String"
+    }
+  },
+
+  "Resources" : {
+    "DBSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription": "Open database for access",
+        "SecurityGroupIngress" : [ {
+          "IpProtocol" : "tcp",
+          "FromPort" : { "Ref" : "DBPort" },
+          "ToPort" : { "Ref" : "DBPort" },
+          "CidrIp" : { "Ref" : "CidrRange" }
+        } ]
+      }
+    }
+  },
+  "Outputs" : {
+    "VPCID" : {
+      "Description": "The ID of the security group",  
+      "Value" : { "Fn::GetAtt" : [ "DBSecurityGroup", "GroupId" ] },
+      "Export" : {
+          "Name" : "mysqlSG-subnet-ID"
+      }
+    }
+  }
+}

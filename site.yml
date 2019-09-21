@@ -1,0 +1,7 @@
+---
+- name: Provision CloudFormation Infrastructure
+  hosts: localhost
+  connection: local
+
+  roles:
+    - aws_vpc

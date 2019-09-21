@@ -1,0 +1,10 @@
+- name: create a cloudformation RDS instance
+  cloudformation:
+    stack_name: "ansible-cloudformation-HVF"
+    state: "present"
+    disable_rollback: true
+    template: "files/rds/wordpressDB.template"
+    template_parameters:
+      DBPort: "3307"
+    tags:
+      Stack: "ansible-cloudformation-HVF"
