@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Provision ELB
+Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+Resources:
+  ElasticLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+    Properties:
+      CrossZone: 'true'
+      Listeners:
+        - LoadBalancerPort: '80'
+          InstancePort: '80'
+          Protocol: HTTP
+      HealthCheck:
+        Target: 'HTTP:80/'
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '5'
+        Interval: '30'
+        Timeout: '5'
+      Subnets:
+        - !ImportValue hvfVPC-PublicSubnet1
+        - !ImportValue hvfVPC-PublicSubnet2
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+Outputs:
+  URL:
+    Description: The URL of the website
+    Value: !Join 
+      - ''
+      - - 'http://'
+        - !GetAtt 
+          - ElasticLoadBalancer
+          - DNSName
+    Export:
+      Name: wordpressELB-Endpoint
+  Name:
+    Description: The name of the ELB
+    Value: !Ref ElasticLoadBalancer
+    Export:
+      Name: wordpressELB-Name

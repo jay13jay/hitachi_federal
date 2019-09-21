@@ -1,15 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: >-
-  AWS CloudFormation Template AutoScalingMultiAZWithNotifications: Create a
-  multi-az, load balanced and Auto Scaled Wordpress sample web site running on
-  an NGINX Web Server. The application is configured to span all Availability
-  Zones in the region and is Auto-Scaled based on the CPU utilization of the web
-  servers. Notifications will be sent to the operator email address on scaling
-  events. The instances are load balanced with a simple health check against the
-  default web page. **WARNING** This template creates one or more Amazon EC2
-  instances and an Elastic Load Balancer. You will be billed for the AWS
-  resources used if you create a stack from this template.
+Description: 'Provision ASG, Notification Topic and LaunchConfig'
 Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+
   InstanceType:
     Description: WebServer EC2 instance type
     Type: String
@@ -18,18 +13,22 @@ Parameters:
       - t1.micro
       - t2.nano
     ConstraintDescription: must be a valid EC2 instance type.
+
   AnsibleRepository:
     Default: 'https://github.com/jay13jay/wordpress-nginx.git'
     Description: The git repository of Ansible playbooks
     Type: String
+
   AnsibleCheckout:
     Default: bcf5fbf46ad868b88e4c552a67d334e2d84823c0
     Description: The branch/tag/commit to checkout
     Type: String
+
   AnsiblePlaybook:
     Default: site.yml
     Description: The Ansible playbook to use
     Type: String
+
   OperatorEMail:
     Description: Email address to notify if there are any scaling operations
     Type: String
@@ -37,11 +36,13 @@ Parameters:
     AllowedPattern: >-
       ([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)
     ConstraintDescription: must be a valid email address.
+
   KeyName:
     Description: The EC2 Key Pair to allow SSH access to the instances
     Default: mbp
     Type: 'AWS::EC2::KeyPair::KeyName'
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
+
   SSHLocation:
     Description: The IP address range that can be used to SSH to the EC2 instances
     Type: String
@@ -50,6 +51,7 @@ Parameters:
     Default: 0.0.0.0/0
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+
   DBUser:
     NoEcho: 'true'
     Description: The database admin account username
@@ -59,6 +61,7 @@ Parameters:
     MaxLength: '16'
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+
   DBPassword:
     NoEcho: 'true'
     Description: The database admin account password
@@ -68,6 +71,7 @@ Parameters:
     MaxLength: '41'
     AllowedPattern: '[a-zA-Z0-9]*'
     ConstraintDescription: must contain only alphanumeric characters.
+
 Mappings:
   AWSInstanceType2Arch:
     t1.micro:
@@ -89,6 +93,7 @@ Mappings:
     eu-central-1:
       HVM64: ami-0233214e13e500f77
       HVMG2: ami-06223d46a6d0661c7
+
 Resources:
   NotificationTopic:
     Type: 'AWS::SNS::Topic'
@@ -96,20 +101,7 @@ Resources:
       Subscription:
         - Endpoint: !Ref OperatorEMail
           Protocol: email
-  WordpressDB:
-    Type: 'AWS::RDS::DBInstance'
-    Properties:
-      DBSnapshotIdentifier: initial-wp-install
-      BackupRetentionPeriod: '0'
-      DBInstanceClass: db.t2.micro
-      AllocatedStorage: '10'
-      Engine: MySQL
-      MasterUsername: !Ref DBUser
-      MasterUserPassword: !Ref DBPassword
-      VPCSecurityGroups:
-        - !GetAtt 
-          - DBSecurityGroup
-          - GroupId
+
   WebServerGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
@@ -118,7 +110,7 @@ Resources:
       MinSize: '1'
       MaxSize: '6'
       LoadBalancerNames:
-        - !Ref ElasticLoadBalancer
+        - !ImportValue wordpressELB-Name
       NotificationConfiguration:
         TopicARN: !Ref NotificationTopic
         NotificationTypes:
@@ -126,6 +118,9 @@ Resources:
           - 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR'
           - 'autoscaling:EC2_INSTANCE_TERMINATE'
           - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
+        Tags:
+          - Key: Name
+            Value: !Ref EnvironmentName
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -136,6 +131,7 @@ Resources:
         MaxBatchSize: '1'
         PauseTime: PT15M
         WaitOnResourceSignals: 'true'
+
   LaunchConfig:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Metadata:
@@ -224,9 +220,7 @@ Resources:
             - ' -C '
             - !Ref AnsibleCheckout
             - ' -e wp_db_url='
-            - !GetAtt 
-              - WordpressDB
-              - Endpoint.Address
+            - !ImportValue wordpressDB-Endpoint
             - ' '
             - !Ref AnsiblePlaybook
             - |+
@@ -245,7 +239,10 @@ Resources:
             - '         --resource WebServerGroup '
             - '         --region '
             - !Ref 'AWS::Region'
-            - |+
+            - ''
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
 
   WebServerScaleUpPolicy:
     Type: 'AWS::AutoScaling::ScalingPolicy'
@@ -254,6 +251,10 @@ Resources:
       AutoScalingGroupName: !Ref WebServerGroup
       Cooldown: '60'
       ScalingAdjustment: '1'
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
   WebServerScaleDownPolicy:
     Type: 'AWS::AutoScaling::ScalingPolicy'
     Properties:
@@ -261,6 +262,10 @@ Resources:
       AutoScalingGroupName: !Ref WebServerGroup
       Cooldown: '60'
       ScalingAdjustment: '-1'
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
   CPUAlarmHigh:
     Type: 'AWS::CloudWatch::Alarm'
     Properties:
@@ -277,6 +282,10 @@ Resources:
         - Name: AutoScalingGroupName
           Value: !Ref WebServerGroup
       ComparisonOperator: GreaterThanThreshold
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
   CPUAlarmLow:
     Type: 'AWS::CloudWatch::Alarm'
     Properties:
@@ -293,63 +302,6 @@ Resources:
         - Name: AutoScalingGroupName
           Value: !Ref WebServerGroup
       ComparisonOperator: LessThanThreshold
-  ElasticLoadBalancer:
-    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
-    Properties:
-      AvailabilityZones: !GetAZs ''
-      CrossZone: 'true'
-      Listeners:
-        - LoadBalancerPort: '80'
-          InstancePort: '80'
-          Protocol: HTTP
-      HealthCheck:
-        Target: 'HTTP:80/'
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '5'
-        Interval: '30'
-        Timeout: '5'
-  DBSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Open database for access
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: '3306'
-          ToPort: '3306'
-          CidrIp: 0.0.0.0/0
-  InstanceSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Enable SSH access and HTTP from the load balancer only
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: '22'
-          ToPort: '22'
-          CidrIp: !Ref SSHLocation
-        - IpProtocol: tcp
-          FromPort: '80'
-          ToPort: '80'
-          SourceSecurityGroupOwnerId: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.OwnerAlias
-          SourceSecurityGroupName: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.GroupName
-        - IpProtocol: tcp
-          FromPort: '8080'
-          ToPort: '8080'
-          SourceSecurityGroupOwnerId: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.OwnerAlias
-          SourceSecurityGroupName: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.GroupName
-Outputs:
-  URL:
-    Description: The URL of the website
-    Value: !Join 
-      - ''
-      - - 'http://'
-        - !GetAtt 
-          - ElasticLoadBalancer
-          - DNSName
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName

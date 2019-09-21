@@ -65,7 +65,10 @@
   "Outputs" : {
     "URL" : {
       "Description" : "The Endpoint of the RDS instance",
-      "Value" :  { "Fn::GetAtt" : [ "WordpressDB", "Endpoint.Address" ]}
+      "Value" :  { "Fn::GetAtt" : [ "WordpressDB", "Endpoint.Address" ]},
+      "Export" : {
+        "Name" : "wordpressDB-Endpoint"
+      }
     },
     "Port" : {
       "Description" : "Database port",

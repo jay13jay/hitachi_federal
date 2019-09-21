@@ -1,0 +1,11 @@
+- name: Create an ELB
+  cloudformation:
+    stack_name: "ansible-cloudformation-wordpress-ELB"
+    state: "present"
+    disable_rollback: true
+    template: "files/elb/wordpressELB.template"
+    template_parameters:
+      EnvironmentName: "{{ EnvironmentName }}"
+
+    tags:
+      Project: "{{ EnvironmentName }}"

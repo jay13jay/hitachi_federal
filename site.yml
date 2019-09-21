@@ -5,3 +5,4 @@
 
   roles:
     - aws_vpc
+    - aws_elb
