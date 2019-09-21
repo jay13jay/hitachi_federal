@@ -11,7 +11,6 @@ Parameters:
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
   DBPort:
     Description: The database port to use
-    Default: '3306'
     Type: String
     MinLength: '2'
     MaxLength: '5'
@@ -27,12 +26,6 @@ Parameters:
     AllowedPattern: '[a-zA-Z0-9]*'
     ConstraintDescription: must contain only alphanumeric characters.
 Resources:
-  WordpressSG:
-    Type: 'AWS::CloudFormation::Stack'
-    Properties:
-      TemplateURL: 'https://cf-templates-jzms7qc9pace-us-east-1.s3.amazonaws.com/mysqlSG.cf'
-      Parameters:
-        DBPort: !Ref DBPort
   WordpressDB:
     Type: 'AWS::RDS::DBInstance'
     Properties:
