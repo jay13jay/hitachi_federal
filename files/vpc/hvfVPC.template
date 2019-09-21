@@ -104,11 +104,11 @@ Resources:
 
   DBSubnetGroup:
    Type: AWS::RDS::DBSubnetGroup
-   Description: Subnet group for DB instances
    Properties:
-      SubnetIds:
-          - !Ref PrivateSubnet1
-          - !Ref PrivateSubnet2
+    DBSubnetGroupDescription: Subnet group for DB instances
+    SubnetIds:
+      - !Ref PrivateSubnet1
+      - !Ref PrivateSubnet2
 
   NatGateway1EIP:
     Type: AWS::EC2::EIP
