@@ -102,6 +102,13 @@ Resources:
         - Key: Name
           Value: !Sub ${EnvironmentName} Private Subnet (AZ2)
 
+  DBSubnetGroup:
+   Type: AWS::RDS::DBSubnetGroup
+   Properties:
+      SubnetIds:
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+
   NatGateway1EIP:
     Type: AWS::EC2::EIP
     DependsOn: InternetGatewayAttachment
@@ -206,6 +213,11 @@ Resources:
       VpcId: !Ref VPC
 
 Outputs:
+  DBSubnetGroup:
+    Description: Subnet group for use by RDS
+    Value: !Ref DBSubnetGroup
+    Export:
+      Name: hvfVPC-DBSubnetGroup
   VPC:
     Description: A reference to the created VPC
     Value: !Ref VPC
