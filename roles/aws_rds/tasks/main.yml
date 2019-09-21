@@ -5,6 +5,9 @@
     disable_rollback: true
     template: "files/rds/wordpressDB.template"
     template_parameters:
-      DBPort: "3307"
+      DBUser: "{{ DBUser }}"
+      DBName: "{{ DBName }}"
+      DBPort: "{{ DBPort }}"
+      DBPassword: "{{ DBPassword }}"
     tags:
       Stack: "ansible-cloudformation-HVF"
