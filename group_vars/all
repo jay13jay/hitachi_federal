@@ -1,3 +1,9 @@
 ---
 # Environment name
 EnvironmentName: Hitachi
+
+# Database Information
+DBName: wordpress
+DBUser: wordpress
+DBPassword: 12345678
+DBPort: 3306
