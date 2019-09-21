@@ -1,0 +1,15 @@
+- name: ASG for wordpress instances
+  cloudformation:
+    stack_name: "ansible-cloudformation-wordpress-ASG"
+    state: "present"
+    disable_rollback: true
+    template: "files/asg/wordpressASG.template"
+    template_parameters:
+      EnvironmentName: "{{ EnvironmentName }}"
+      AnsibleRepository: "{{ AnsibleRepository }}"
+      AnsibleCheckout: "{{ AnsibleCheckout }}"
+      AnsiblePlaybook: "{{ AnsiblePlaybook }}"
+      OperatorEmail: "{{ OperatorEmail }}"
+      KeyName: "{{ KeyName }}"
+    tags:
+      Project: "{{ EnvironmentName }}"

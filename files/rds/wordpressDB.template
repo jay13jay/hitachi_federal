@@ -25,11 +25,16 @@ Parameters:
     MaxLength: '41'
     AllowedPattern: '[a-zA-Z0-9]*'
     ConstraintDescription: must contain only alphanumeric characters.
+  DBSnapshot:
+    Description: The snapshot to provision
+    Type: String
+    
+
 Resources:
   WordpressDB:
     Type: 'AWS::RDS::DBInstance'
     Properties:
-      DBSnapshotIdentifier: initial-wp-install
+      DBSnapshotIdentifier: !Ref DBSnapshot
       BackupRetentionPeriod: '0'
       DBInstanceClass: db.t2.micro
       AllocatedStorage: '10'

@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Provision security group to allow SSH access to instance
+Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+  SSHLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instances
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 0.0.0.0/0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+
+Resources:
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable SSH access and HTTP from the load balancer only
+      VpcId: !ImportValue hvfVPC-Name
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: !Ref SSHLocation
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          SourceSecurityGroupOwnerId: !ImportValue wordpressELB-SG-ID
+          SourceSecurityGroupName: !ImportValue wordpressELB-SG-Name
+        - IpProtocol: tcp
+          FromPort: '8080'
+          ToPort: '8080'
+          SourceSecurityGroupOwnerId: !ImportValue wordpressELB-SG-ID
+          SourceSecurityGroupName: !ImportValue wordpressELB-SG-Name
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+Outputs:
+  SSHCidr:
+    Description: The CIDR of the security group
+    Value: !Ref SSHLocation
+    Export:
+      Name: sshSG-Cidr
+  InstanceSecurityGroup:
+    Description: Security group for the ec2 instances
+    Value: !Ref InstanceSecurityGroup
+    Export:
+      Name: instanceSG-SecurityGroup

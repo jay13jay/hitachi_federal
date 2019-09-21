@@ -9,6 +9,8 @@ Resources:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
     Properties:
       CrossZone: 'true'
+      SecurityGroups: 
+        - !ImportValue instanceSG-SecurityGroup
       Listeners:
         - LoadBalancerPort: '80'
           InstancePort: '80'
@@ -25,9 +27,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref EnvironmentName
+
 Outputs:
   URL:
-    Description: The URL of the website
+    Description: The URL of the ELB
     Value: !Join 
       - ''
       - - 'http://'
@@ -41,3 +44,19 @@ Outputs:
     Value: !Ref ElasticLoadBalancer
     Export:
       Name: wordpressELB-Name
+  SourceSecurityGroupOwnerId:
+    Description: wordpress ELB source security group ID
+    Value: 
+      !GetAtt 
+        - ElasticLoadBalancer
+        - SourceSecurityGroup.OwnerAlias
+    Export:
+      Name: wordpressELB-SG-ID
+  SourceSecurityGroupName:
+    Description: Wordpress ELB source security group name
+    Value:
+      !GetAtt 
+        - ElasticLoadBalancer
+        - SourceSecurityGroup.GroupName
+    Export:
+      Name: wordpressELB-SG-Name

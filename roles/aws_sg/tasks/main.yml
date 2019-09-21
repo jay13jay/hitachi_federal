@@ -1,0 +1,10 @@
+- name: Security Groups for wordpress instances
+  cloudformation:
+    stack_name: "ansible-cloudformation-wordpress-SG"
+    state: "present"
+    disable_rollback: true
+    template: "files/sg/instanceSG.template"
+    template_parameters:
+      EnvironmentName: "{{ EnvironmentName }}"
+    tags:
+      Project: "{{ EnvironmentName }}"
