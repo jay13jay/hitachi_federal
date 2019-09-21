@@ -5,9 +5,7 @@
     disable_rollback: true
     template: "files/vpc/hvfVPC.template"
     template_parameters:
-      AvailabilityZones:
-        - "us-east-1a"
-        - "us-east-1b"
-      NumberOfAZs: 2
+      EnvironmentName: "{{ EnvironmentName }}"
+
     tags:
-      Project: "ansible-cloudformation-HVF"
+      Project: "{{ EnvironmentName }}"
