@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  AWS CloudFormation Template AutoScalingMultiAZWithNotifications: Create a
+  multi-az, load balanced and Auto Scaled Wordpress sample web site running on
+  an NGINX Web Server. The application is configured to span all Availability
+  Zones in the region and is Auto-Scaled based on the CPU utilization of the web
+  servers. Notifications will be sent to the operator email address on scaling
+  events. The instances are load balanced with a simple health check against the
+  default web page. **WARNING** This template creates one or more Amazon EC2
+  instances and an Elastic Load Balancer. You will be billed for the AWS
+  resources used if you create a stack from this template.
+Parameters:
+  DBUser:
+    NoEcho: 'true'
+    Description: The database admin account username
+    Default: wordpress
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBPassword:
+    NoEcho: 'true'
+    Description: The database admin account password
+    Default: '12345678'
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+
+Resources:
+  WordpressDB:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBSnapshotIdentifier: initial-wp-install
+      BackupRetentionPeriod: '0'
+      DBInstanceClass: db.t2.micro
+      AllocatedStorage: '10'
+      Engine: MySQL
+      MasterUsername: !Ref DBUser
+      MasterUserPassword: !Ref DBPassword
+      VPCSecurityGroups:
+        - !GetAtt 
+          - DBSecurityGroup
+          - GroupId
+  DBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Open database for access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '3306'
+          ToPort: '3306'
+          CidrIp: 0.0.0.0/0
+
+Outputs:
+  DBHost:
+    Description: The host of the RDS instance
+    Value: !GetAtt WordpressDB.Endpoint.Address
+    Export:
+      Name: HitachiRDS
