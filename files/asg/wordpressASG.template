@@ -8,7 +8,7 @@ Parameters:
   InstanceType:
     Description: WebServer EC2 instance type
     Type: String
-    Default: t1.micro
+    Default: t2.nano
     AllowedValues:
       - t1.micro
       - t2.nano
@@ -20,7 +20,7 @@ Parameters:
     Type: String
 
   AnsibleCheckout:
-    Default: bcf5fbf46ad868b88e4c552a67d334e2d84823c0
+    Default: 28907acf686da9bade49c1595c48962e1d3e75dd
     Description: The branch/tag/commit to checkout
     Type: String
 
@@ -84,6 +84,9 @@ Mappings:
     eu-central-1:
       HVM64: ami-0233214e13e500f77
       HVMG2: ami-06223d46a6d0661c7
+
+Conditions:
+  SubnetCondition: !Equals [!Ref "AWS::Region", us-east-1a]
 
 Resources:
   NotificationTopic:
@@ -184,9 +187,9 @@ Resources:
           - AWSInstanceType2Arch
           - !Ref InstanceType
           - Arch
-      SecurityGroups:
-        - !ImportValue instanceSG-SecurityGroup
+
       InstanceType: !Ref InstanceType
+      SecurityGroup: !ImportValue instanceSG-SecurityGroup
       UserData: !Base64 
         'Fn::Join':
           - ''

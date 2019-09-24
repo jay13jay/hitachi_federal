@@ -17,6 +17,7 @@ Resources:
   InstanceSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
+      VpcId: !ImportValue hvfVPC-Name
       Tags:
         - Key: Name
           Value: !Ref EnvironmentName
@@ -26,13 +27,8 @@ Resources:
           FromPort: '22'
           ToPort: '22'
           CidrIp: !Ref SSHLocation
+      SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: '80'
           ToPort: '80'
-          SourceSecurityGroupOwnerId: !ImportValue wordpressELB-SG-Id
-          SourceSecurityGroupName: !ImportValue wordpressELB-SG-Name
-        - IpProtocol: tcp
-          FromPort: '8080'
-          ToPort: '8080'
-          SourceSecurityGroupOwnerId: !ImportValue wordpressELB-SG-Id
           SourceSecurityGroupName: !ImportValue wordpressELB-SG-Name

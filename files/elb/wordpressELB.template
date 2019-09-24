@@ -5,12 +5,26 @@ Parameters:
     Description: An environment name that will be prefixed to resource names
     Type: String
 Resources:
+  ELBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+      GroupDescription: Enable HTTP to the load balancer
+      VpcId: !ImportValue hvfVPC-Name
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+          
   ElasticLoadBalancer:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
     Properties:
       CrossZone: 'true'
-      SecurityGroups: 
-        - !ImportValue instanceSG-SecurityGroup
+      SecurityGroups:
+        - !Ref ELBSecurityGroup
       Listeners:
         - LoadBalancerPort: '80'
           InstancePort: '80'
@@ -51,7 +65,7 @@ Outputs:
         - ElasticLoadBalancer
         - SourceSecurityGroup.OwnerAlias
     Export:
-      Name: wordpressELB-SG-ID
+      Name: wordpressELB-SG-Id
   SourceSecurityGroupName:
     Description: Wordpress ELB source security group name
     Value:

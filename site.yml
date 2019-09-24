@@ -5,6 +5,7 @@
 
   roles:
     - aws_vpc
-    - aws_sg
     - aws_elb
+    - aws_sg
     - aws_rds
+    - aws_asg
